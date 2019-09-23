@@ -1,0 +1,107 @@
+<script>
+    function ListNode(val) {
+        this.val = val;
+        this.next = null;
+    }
+
+    /**
+     * 给出两个 非空 的链表用来表示两个非负的整数。其中，它们各自的位数是按照 逆序 的方式存储的，并且它们的每个节点只能存储 一位 数字。
+
+     如果，我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。
+
+     您可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+     /**
+     * @param {ListNode} l1
+     * @param {ListNode} l2
+     * @return {ListNode}
+     */
+/*    var addTwoNumbers = function (l1, l2) {
+        let currNode1 = l1;
+        let currNode2 = l2;
+        // 标记是否进位
+        let carryFlag = 0;
+        while (true) {
+            currNode1.val += currNode2.val + carryFlag;
+            if (currNode1.val < 10) {
+                carryFlag = 0;
+            } else {
+                currNode1.val -= 10;
+                carryFlag = 1;
+            }
+            if (currNode1.next === null || currNode2.next === null) {
+                break;
+            }
+            currNode1 = currNode1.next;
+            currNode2 = currNode2.next;
+        }
+        if (currNode2.next !== null) {
+            currNode1.next = currNode2.next;
+        }
+        while (carryFlag > 0) {
+            if (currNode1.next === null) {
+                currNode1.next = new ListNode(carryFlag);
+                break;
+            }
+            let newVal = currNode1.next.val + carryFlag;
+            if (newVal < 10) {
+                currNode1.next.val = newVal;
+                carryFlag = 0;
+            } else {
+                currNode1.next.val = newVal - 10;
+                carryFlag = 1;
+                currNode1 = currNode1.next;
+            }
+        }
+        return l1;
+    };*/
+    var addTwoNumbers = function (l1, l2) {
+        let bak = new ListNode(null);
+        let node = bak;
+        let carryNum = 0;
+        while (l1 !== null && l2 !== null) {
+            let newVal = l1.val + l2.val + carryNum;
+            let newNode;
+            if (newVal < 10) {
+                newNode = new ListNode(newVal);
+                carryNum = 0;
+            } else {
+                newNode = new ListNode(newVal % 10);
+                carryNum = 1;
+            }
+            node.next = newNode;
+            node = newNode;
+            l1 = l1.next;
+            l2 = l2.next;
+        }
+        if (l1 !== null) {
+            node.next = l1;
+        } else if (l2 !== null) {
+            node.next = l2;
+        }
+        while (carryNum > 0) {
+            if (node.next === null) {
+                node.next = new ListNode(carryNum);
+                break;
+            }
+            let newVal = node.next.val + carryNum;
+            if (newVal < 10) {
+                node.next.val = newVal;
+                carryNum = 0;
+            } else {
+                node.next.val = newVal % 10;
+                carryNum = 1;
+                node = node.next;
+            }
+        }
+        return bak.next;
+    };
+    // let result = addTwoNumbers([2, 4, 3], [5, 6, 4]);
+    // let result = addTwoNumbers(new ListNode(9), new ListNode(9));
+    /*    let listNode = new ListNode(9);
+        listNode.next = new ListNode(8);
+        let result = addTwoNumbers(listNode, new ListNode(1));*/
+    let listNode = new ListNode(7);
+    listNode.next = new ListNode(9);
+    let result = addTwoNumbers(new ListNode(0), listNode);
+    console.log(result)
+</script>

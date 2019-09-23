@@ -1,0 +1,112 @@
+<script>
+    /**
+     * 给定一个字符串，请你找出其中不含有重复字符的 最长子串 的长度。
+     * @param {string} s
+     * @return {number}
+     */
+    var lengthOfLongestSubstring1 = function (s) {
+        // 子串最长有s.length
+        let counts = new Array(s.length + 1);
+        loop:for (let i = 0; i < s.length; i++) {
+            // 创建不重复序列并计数
+            let dict = {};
+            let count = 0;
+            for (let j = i; j < s.length; j++) {
+                let char = s[j];
+                if (dict[char] === undefined) {
+                    // 当前序列不存在
+                    dict[char] = i;
+                    count++;
+                } else {
+                    // 出现重复字符,记录该序列长度
+                    counts[count] = 1;
+                    // 取原字符下标,使用新序列计数
+                    i = dict[char];
+                    continue loop;
+                }
+                if (j === s.length - 1) {
+                    counts[count] = 1;
+                    break loop;
+                }
+            }
+        }
+        for (let i = counts.length - 1; i >= 0; i--) {
+            if (counts[i] !== undefined) {
+                return i;
+            }
+        }
+        return 0;
+    };
+    /**
+     * 滑动窗口法：窗口向右滑动，每次减去失效值加上最新值，即为当前窗口的和，然后再比较
+     * @param s
+     * @returns {number}
+     */
+    var lengthOfLongestSubstring2 = function (s) {
+        let length = s.length;
+        // 将每个字符存储到字典中
+        let dict = {};
+        let left = 0;
+        let right = -1;
+        let result = 0;
+        while (right + 1 < length) {
+            // 当右边还有字符时
+            let rightChar = s[right + 1];
+            if (dict[rightChar] === undefined) {
+                // 字符未在字典中出现,标记已出现
+                dict[rightChar] = true;
+                // 继续判断下一个字符
+                right++;
+            } else {
+                // 字符已出现过,从左到右将原先已标记的字符去掉标记,直至下一个字符未在字典中出现
+                dict[s[left]] = undefined;
+                left++;
+            }
+            result = Math.max(result, right - left + 1);
+        }
+        return result;
+    };
+    /**
+     * 动态规划算法
+     * https://github.com/617076674/LeetCode/blob/master/question0003/Solution4.java
+     *
+     */
+    var lengthOfLongestSubstring = function (s) {
+        let length = s.length;
+        // 依次记录每一个索引的有效长度,并记录每次产生的最大值
+        let countValidList = Array(length);
+        let max = 0;
+        // 记录每个字符最后一次出现的位置
+        let dict = {};
+        for (let i = 0; i < length; i++) {
+            let char = s[i];
+            if (i === 0) {
+                countValidList[i] = 1;
+            } else {
+                // 获取当前字符最后一次出现的位置
+                let lastIndex = dict[char];
+                if (lastIndex === undefined) {
+                    // 如果未出现过,则当前字符有效长度为上一个字符的有效长度+1
+                    countValidList[i] = countValidList[i - 1] + 1;
+                } else {
+                    // 获取当前字符到出现位置的距离
+                    let distance = i - lastIndex;
+                    // 如果距离小于上一个字符的有效长度,则当前字符的有效长度=该距离
+                    if (distance <= countValidList[i - 1]) {
+                        countValidList[i] = distance;
+                    } else {
+                        // 否则当前字符有效长度仍为上一个字符的有效长度+1
+                        countValidList[i] = countValidList[i - 1] + 1;
+                    }
+                }
+            }
+            // 记录最大值
+            max = Math.max(max, countValidList[i]);
+            // 记录字符最后一次出现的位置
+            dict[char] = i;
+        }
+        return max;
+    };
+    console.log(lengthOfLongestSubstring('abcabcbb'));
+    console.log(lengthOfLongestSubstring(" "));
+</script>
