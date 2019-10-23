@@ -2,11 +2,102 @@
     /*
         给定一个字符串 s，找到 s 中最长的回文子串。你可以假设 s 的最大长度为 1000。
         https://leetcode-cn.com/problems/longest-palindromic-substring/solution/
-        中心扩展算法 O(n*n)
+        Manacher算法 https://mp.weixin.qq.com/s?__biz=MzIzMTE1ODkyNQ==&mid=2649410225&idx=1&sn=ed045e8edc3c49a436a328e5f0f37a55
      * @param {string} s
      * @return {string}
      */
     var longestPalindrome = function (s) {
+        if (s === undefined || s.length === 0) {
+            return '';
+        }
+        // 插入占位符
+        let str = '#';
+        for (let i = 0; i < s.length; i++) {
+            str += s[i] + '#';
+        }
+        // 保存最长回文的起止索引
+        let start = 0;
+        let end = 0;
+        let max = 1;
+        // 存储每个位置对应的最长回文串左右边界索引,key为索引,value[左边界索引,右边界索引]
+        let borderDict = new Array(str.length);
+        borderDict[0] = [start, end];
+        // 依次为 已识别的回文串的最右边界,对应的中点,对应的最左边界
+        const position = [0, 0, 0];
+        for (let i = 1; i < str.length; i++) {
+            // 求以i字符为中心的最长回文
+            let [len, left, right] = getLongestPalindrome(borderDict, str, i, position);
+            if (len >= max) {
+                [max, start, end] = [len, left, right];
+            }
+        }
+        return str.substring(start, end + 1).replace(new RegExp('#','g'), '');
+    };
+
+    /**
+     *
+     * @param borderDict 存储每个位置对应的最长回文串左右边界索引,key为索引,value[左边界索引,右边界索引]
+     * @param str 所查找的字符串
+     * @param i 当前索引
+     * @param position [已识别的回文串的最右边界,对应的中点,对应的最左边界]
+     * @returns number[] 【回文最大长度,回文左索引,回文右索引】
+     */
+    function getLongestPalindrome(borderDict, str, i, position) {
+        // 取出最右边界，对应的中心及左边界
+        let [pRight, pCenter, pLeft] = position;
+        let iLeft;
+        let iRight;
+        if (i < pRight) {
+            // i不超过最右边界
+            //   设i对应pCenter的索引为j，取j的回文左边界及最大长度
+            let j = pCenter - (i - pCenter);
+            let jLeft = borderDict[j][0];
+            let jRight = borderDict[j][1];
+            let jMax = jRight - jLeft + 1;
+            if (jLeft > pLeft) {
+                // jLeft > pLeft i可直接使用j的最长回文信息
+                // 存储每个位置的边界
+                let offset = (jMax - 1) / 2;
+                iLeft = i - offset;
+                iRight = i + offset;
+                borderDict[i] = [iLeft, iRight];
+                return [jMax, iLeft, iRight];
+            } else {
+                // jLeft <= pLeft i无法直接使用j的最长回文,需要在j的基础上继续扩展边界
+                iRight = pRight;
+                iLeft = i - (pRight - i);
+                return expandBorder(i, iLeft, iRight, str, position, borderDict);
+            }
+        } else {
+            // i 超过最右边界,需要计算最大长度，并更新最右边界，对应的中心及左边界
+            iLeft = i - 1;
+            iRight = i + 1;
+            return expandBorder(i, iLeft, iRight, str, position, borderDict);
+        }
+    }
+
+    /**
+     * 拓展右边界
+     */
+    function expandBorder(i, iLeft, iRight, str, position, borderDict) {
+        while (iLeft >= 0 && iRight < str.length && str[iLeft] === str[iRight]) {
+            iLeft--;
+            iRight++;
+        }
+        // 更新最右边界，对应的中心及左边界
+        position[0] = --iRight;
+        position[1] = i;
+        position[2] = ++iLeft;
+        // 存储每个位置的边界
+        borderDict[i] = [iLeft, iRight];
+        // 取最大长度
+        return [iRight - iLeft + 1, iLeft, iRight];
+    }
+
+    /*
+    * 中心扩展算法 O(n*n)
+    * */
+    var longestPalindrome1 = function (s) {
         if (s === undefined || s.length === 0) {
             return '';
         }
@@ -16,9 +107,9 @@
         let max = 0;
         for (let i = 0; i < s.length; i++) {
             // 以i字符为中心向两边扩散求最长回文
-            let [len1, left1, right1] = getLongestPalindrome(s, i, i);
+            let [len1, left1, right1] = getLongestPalindrome1(s, i, i);
             // 以i,i+1两字符中间为中心
-            let [len2, left2, right2] = getLongestPalindrome(s, i, i + 1);
+            let [len2, left2, right2] = getLongestPalindrome1(s, i, i + 1);
             let [t_max, t_start, t_end] = len1 > len2 ? [len1, left1, right1] : [len2, left2, right2];
             if (t_max >= max) {
                 [max, start, end] = [t_max, t_start, t_end];
@@ -35,7 +126,7 @@
      * @param right
      * @returns number[] 【回文最大长度,回文左索引,回文右索引】
      */
-    function getLongestPalindrome(s, left, right) {
+    function getLongestPalindrome1(s, left, right) {
         while (left >= 0 && right < s.length && s[left] === s[right]) {
             left--;
             right++;
@@ -51,5 +142,8 @@
         return [right - left + 1, left, right];
     }
 
-    console.log(longestPalindrome("babad"));
+    console.log(longestPalindrome("aaabaaaa"));
+    console.log(longestPalindrome("babad")); // aba
+    console.log(longestPalindrome("a")); // 'a'
+    console.log(longestPalindrome("ccd")); // 'cc'
 </script>
