@@ -1,0 +1,68 @@
+<script>
+    /**
+     实现一个基本的计算器来计算一个简单的字符串表达式的值。
+     字符串表达式可以包含左括号 ( ，右括号 )，加号 + ，减号 -，非负整数和空格
+     */
+    const ADD = "+";
+    const SUBTRACT = "-";
+    /**
+     * @param {string} s
+     * @return {number}
+     */
+    var calculate = function(s) {
+        let left = "(";
+        let right = ")";
+        // 存放每段数据字符的栈，[[],[],...]，把括号 ( ) 间的数据作为其中一段放入
+        let operands = [[]];
+        // 存放运算符的栈
+        let operators = [];
+        for (let char in s) {
+            switch (char) {
+                case left:
+                    // 创建新的数据存放位置,用于放入括号间的数据
+                    operands.push([]);
+                    break;
+                case right:
+                    // 取出最后一段数据(左右括号间) 计算结果,放入上一段的末尾
+                    let lastDataList = operands.pop();
+                    let result = count(lastDataList, operators);
+                    operands[operands.length-1].push(result);
+                    break;
+                case ADD || SUBTRACT:
+                    // 加/减号 存入运算符栈
+                    operators.push(char);
+                    break;
+                default:
+                    let number = parseInt(char);
+                    // 只要是数字，就存入待运算的数据栈
+                    if (number) {
+                        operands[operands.length-1].push(number);
+                    }
+            }
+        }
+        return count(operands.pop(), operators);
+    };
+
+    function count(dataList, operators) {
+        if (dataList.length === 0) {
+            return 0;
+        }
+        let pop = dataList.pop();
+        while (dataList.length > 0) {
+            let num = dataList.pop();
+            let operator = operators.pop();
+            switch (operator) {
+                case ADD:
+                    pop += num;
+                    break;
+                case SUBTRACT:
+                    pop -= num;
+                    break;
+            }
+        }
+        return pop;
+    }
+    console.log(calculate("1 + 1"));
+    // console.log(parseInt(" "));
+    // console.log(parseInt("  "));
+</script>
