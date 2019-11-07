@@ -14,28 +14,30 @@
         let right = ")";
         // 存放每段数据字符的栈，[[],[],...]，把括号 ( ) 间的数据作为其中一段放入
         let operands = [[]];
-        // 存放运算符的栈
-        let operators = [];
+        // 存放运算符的栈，[[],[],...]，把括号 ( ) 间的运算符作为其中一段放入,
+        // 每个数字用其前面的符号做运算,先往第一个数字前面放个'+'号
+        let operators = [[ADD]];
         for (let i = 0; i < s.length; i++) {
             let char = s[i];
             switch (char) {
                 case left:
                     // 创建新的数据存放位置,用于放入括号间的数据
                     operands.push([]);
+                    operators.push([ADD]);
                     break;
                 case right:
                     // 取出最后一段数据(左右括号间) 计算结果,放入上一段的末尾
                     let lastDataList = operands.pop();
-                    let result = count(lastDataList, operators);
-                    operands[operands.length-1].push(result);
+                    let result = count(lastDataList, operators.pop());
+                    operands[operands.length - 1].push(result);
                     break;
                 case ADD:
                     // 加/减号 存入运算符栈
-                    operators.push(char);
+                    operators[operators.length - 1].push(char);
                     break;
                 case SUBTRACT:
                     // 加/减号 存入运算符栈
-                    operators.push(char);
+                    operators[operators.length - 1].push(char);
                     break;
                 default:
                     let number = parseInt(char);
@@ -45,32 +47,31 @@
                     }
             }
         }
-        return count(operands.pop(), operators);
+        return count(operands.pop(), operators.pop());
     };
 
     function count(dataList, operators) {
         // console.log(operators);
-        if (dataList.length === 0) {
-            return 0;
-        }
-        let pop = dataList.pop();
+        let start = 0;
         while (dataList.length > 0) {
             let num = dataList.pop();
             let operator = operators.pop();
-            // console.log(pop, num, operator);
+            // console.log(start, num, operator);
             switch (operator) {
                 case ADD:
-                    pop += num;
+                    start += num;
                     break;
                 case SUBTRACT:
-                    pop = num - pop;
+                    start -= num;
                     break;
             }
         }
-        return pop;
+        return start;
     }
     console.log(calculate("1 + 1"));
     console.log(calculate("1 + 1-5"));
+    console.log(calculate(" 2-1 + 2 "));
+    console.log(calculate("(1+(4+5+2)-3)+(6+8)"));
     // console.log(parseInt(" "));
     // console.log(parseInt("  "));
 </script>
