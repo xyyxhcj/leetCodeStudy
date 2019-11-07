@@ -17,6 +17,7 @@
         // 存放运算符的栈，[[],[],...]，把括号 ( ) 间的运算符作为其中一段放入,
         // 每个数字用其前面的符号做运算,先往第一个数字前面放个'+'号
         let operators = [[ADD]];
+        let num = undefined;
         for (let i = 0; i < s.length; i++) {
             let char = s[i];
             switch (char) {
@@ -26,32 +27,54 @@
                     operators.push([ADD]);
                     break;
                 case right:
+                    if (num) {
+                        // 将数字存入待运算的数据栈
+                        operands[operands.length - 1].push(num);
+                        num = undefined;
+                    }
                     // 取出最后一段数据(左右括号间) 计算结果,放入上一段的末尾
-                    let lastDataList = operands.pop();
-                    let result = count(lastDataList, operators.pop());
+                    let result = count(operands.pop(), operators.pop());
                     operands[operands.length - 1].push(result);
                     break;
                 case ADD:
+                    if (num) {
+                        // 将数字存入待运算的数据栈
+                        operands[operands.length - 1].push(num);
+                        num = undefined;
+                    }
                     // 加/减号 存入运算符栈
                     operators[operators.length - 1].push(char);
                     break;
                 case SUBTRACT:
+                    if (num) {
+                        // 将数字存入待运算的数据栈
+                        operands[operands.length - 1].push(num);
+                        num = undefined;
+                    }
                     // 加/减号 存入运算符栈
                     operators[operators.length - 1].push(char);
                     break;
                 default:
                     let number = parseInt(char);
-                    // 只要是数字，就存入待运算的数据栈
-                    if (number) {
-                        operands[operands.length-1].push(number);
+                    if (number || number === 0) {
+                        if (!num) {
+                            num = number;
+                        } else {
+                            // 拼接数字
+                            num = num * 10 + number;
+                        }
+                        // console.log('num:', num);
                     }
             }
+        }
+        if (num) {
+            operands[operands.length - 1].push(num);
         }
         return count(operands.pop(), operators.pop());
     };
 
     function count(dataList, operators) {
-        // console.log(operators);
+        // console.log(dataList, operators);
         let start = 0;
         while (dataList.length > 0) {
             let num = dataList.pop();
@@ -72,6 +95,8 @@
     console.log(calculate("1 + 1-5"));
     console.log(calculate(" 2-1 + 2 "));
     console.log(calculate("(1+(4+5+2)-3)+(6+8)"));
+    console.log(calculate("2147483647"));
+    console.log(calculate("  30"));
     // console.log(parseInt(" "));
     // console.log(parseInt("  "));
 </script>
